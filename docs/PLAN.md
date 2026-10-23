@@ -1,233 +1,331 @@
-# MineHub — Mining Fleet Management System
-## Master Plan (v0.1 — for review before any code is written)
+# MineHub — Master Plan
+### v0.2 — rebuilt from your Gemini conversations ("DESKTOP APP" and "Streamlining Mining Data with Microsoft Tools")
 
-> **Status:** Draft for discussion. Nothing in here is final. Sections marked **❓ DECISION** need an answer from the mine side before we build that part.
+> **Status:** Draft for review. **No code is written until you approve this plan.**
+> Items marked **❓ DECISION** need your answer.
 
 ---
 
-## 1. What we are building, in one paragraph
+## Part A — Understanding
 
-MineHub is a system that tells everyone at the mine, in real time, **what every machine is doing, where it is, and how much material has moved** — and turns that into reliable shift reports and KPIs without anyone retyping numbers into Excel. Operators press a few big buttons on a tablet in the cab. Dispatchers watch a live board and map and reassign trucks. Supervisors, maintenance, planners and managers get accurate reports and dashboards from the same data.
+### A1. The problem (in your words)
+At the mine, every department keeps its own Excel files — **Planning, Dispatch, Geology (quality & seam quantities), Survey (actuals)**. Combining them is slow, error-prone and messy, and subcontractors deliver their data in their own formats. Nobody sees one trusted picture of the day.
 
-## 2. Why earlier attempts struggle (and what we will do differently)
+### A2. What MineHub is
+**One cloud platform where every department of every company at a mine enters its data once, in a controlled way, and everyone gets the same trusted reports.**
 
-AI-generated attempts at "desktop + cloud + mobile" apps usually fail for the same few reasons. We design against each one from day one:
+- **Multi-company (SaaS):** used by many mining companies, not just one. Each company only sees what it is allowed to see.
+- **Owner + subcontractor model:** the mine owner defines the mine (locations, blocks, materials, qualities). Subcontractors use the owner's definitions, bring their own fleet and people, and their data flows to the owner automatically.
+- **Any commodity:** coal, gold, copper, other minerals. Nothing is hard-coded for coal or for one mine.
+- **"Master data first":** nobody types free text for important things (truck IDs, seams, locations). They pick from lists, so the data is clean.
+- **Two kinds of data:**
+  - **Post-processed / manual data first:** plans, dispatch shift logs, geology quality, survey actuals, stockpile balances, daily approval.
+  - **Real-time data later:** equipment location and status from the **Data Collector App** on handheld devices in the cabs.
+- **Reports people can trust:** plan vs dispatch vs survey reconciliation, stockpile balance, ROM quality, KPIs, Excel export, and later a flexible pivot/report builder.
 
-| Common failure | What we do instead |
+### A3. Everything you asked for (collected from both conversations)
+**Platform & access**
+- Sign up / sign in with username or email + password, plus password reset by email. Email or phone verification.
+- Registration choice: **join an existing company** (6-digit company ID → request goes to that company's admin) **or create a new company**:
+  - owner or subcontractor (a subcontractor enters its head company's ID);
+  - owner companies enter mine details: name, type (coal / metals / minerals), country, state.
+- **Super admin** (you, the platform owner):
+  - sees all companies;
+  - approves new companies;
+  - gives **licences** (start date, end date, remaining days are calculated);
+  - can delete users and companies;
+  - can switch into any company to help it.
+- **Licence check:** no licence, or an expired one, means no access. The message says "No valid licence" or "Licence expired", followed by "contact admin@minehub.mn, +976…".
+- **User management:** users list, join requests (approve / reject), and **custom roles per company** (not hard-coded).
+  - Permissions are set per tab: view / edit.
+  - Permissions can be given **per user**, and a user-level grant overrides the role.
+  - Normal users can't see user management or approve themselves.
+- **Setup wizard** on a company admin's first login:
+  - owner company: locations, materials, qualities, roles and permissions;
+  - subcontractor: roles and permissions only.
+
+**Master data ("Project setup")**
+- **Fleet:** equipment ID, type, brand, model, capacity (m³ / t), notes. Also **operators**.
+- **Locations:**
+  - type is **source** (where material is dug) or **destination** (where it is dumped);
+  - name, block, elevation;
+  - for a destination, whether it is a **stockpile**.
+- **Materials:**
+  - type, is it a resource (yes/no), unit (m³ / t), default density, default swell factor, notes;
+  - **coal:** seam (0–10) and sub-seam (A, B, C, D, U);
+  - **other commodities:** category and sub-category.
+- **Qualities:** name (ash, CV, sulphur, Au g/t…), unit, notes.
+- **Products:** classify resource into products or grades by quality ranges.
+- **Custom fields:** name, unit (length / volume / area / mass / custom), notes. Example: haul distance per cycle or per shift.
+- **Bulk edit:** **copy/paste straight from Excel**, with save and cancel.
+- Microsoft Office **import/export** everywhere.
+
+**Operations modules:** Plan, Dispatch, Geology, Survey, Stockpile management, Reconciliation, Reports.
+- Dispatch form: selecting a truck fills its capacity automatically.
+- Reconciliation: dispatch total vs survey actual per block/period, with variance %.
+- **Stockpile:** day-to-day balance.
+- **ROM quality.**
+
+**Daily approval workflow**
+- Each day's data is entered in sequence: **planners → dispatchers → geologists → surveyors**.
+- Everyone can see the day's checkpoint status.
+- After some days, **department chiefs approve** the reports.
+
+**Map**
+- Satellite basemap.
+- **DWG/DXF CAD import** to show pits, roads and boundaries.
+- Draw and highlight areas, with view/edit permission.
+- Later: **live equipment positions**.
+
+**Data Collector App (handheld in each machine)**
+- Sends **real-time** location and status.
+- Sends the **activity log and production log** at the end of the shift.
+- Always talks to the system **through the web API**, which keeps it secure and maintainable.
+- Must stay flexible, so it can be rebuilt and connected easily.
+
+**Integration**
+- Final shift data (total material moved, equipment activity log) can go to the **company's own local SQL Server** if the company wants it.
+
+### A4. Why the previous attempts kept breaking (honest review)
+
+| What happened | Root cause | What we do now |
+|---|---|---|
+| Restarted 4 times: Windows Forms → .NET MAUI → React → Antigravity | Platform choices changed mid-way; each restart threw away work | **Choose the platform once (Part C), with reasons, and keep it** |
+| "The old version worked like a charm, why did you mess up the working code?" | No version history; the AI rewrote whole files and silently dropped features (for example, the user management tab disappeared) | **Git on GitHub:** every change is saved, small and reversible. Nothing is ever "lost" again |
+| The same syntax error came back again and again | Copy-pasting giant files from chat into your PC by hand | **I write, run and test the code directly in this repository.** You never copy-paste code |
+| Everything in one `App.js` | No structure | Modular project: one folder per module, shared components |
+| "SQL and Firebase are out of sync", "where() called with undefined", sign-up requests not appearing | **Two databases holding overlapping data** (users and companies in Firebase, permissions and data in Supabase) | **One database is the single source of truth** (decision C2) |
+| Users could approve their own requests | Permission rules only in the screen code, not enforced on the server | **Every rule is enforced on the server and in the database**, and screens only hide or show |
+| "I deleted my old tables, give me new SQL" | No managed database changes | **Database migrations:** each change is a versioned script, applied automatically and never destroys data |
+| Copilot said "all phases complete" but the app showed "Hello World" | Nobody verified; no tests | **Automated tests + I run the app and check it myself** before saying something is done |
+| Features (map, live updates) added before basics were solid | No phase discipline | You already said it best: *"solidify each step, working robust"* — strict phases below |
+
+**Security note:** your Google Docs contain your Supabase project key and Firebase settings. If those docs are shared publicly ("anyone with the link"), please make them private. When we rebuild, we'll create fresh projects and keys anyway, so the old keys will no longer matter.
+
+---
+
+## Part B — Core Design
+
+### B1. Who's who (tenancy model)
+```
+Platform (MineHub — Super Admin)
+└── Company  (type: OWNER or SUBCONTRACTOR, 6-digit unique ID, licence)
+    ├── Owner company ──owns──► Mine / Site (name, commodity, country, state, coordinate system)
+    │                              ├── Master data owned by the mine: locations, blocks, materials, qualities, products
+    │                              └── Contracts: which subcontractor works at this mine (start/end)
+    ├── Subcontractor ──works at──► Mine (via contract)
+    │      ├── Own: fleet, operators, users, roles
+    │      └── Uses (read-only): the mine's locations, materials, qualities
+    └── Users ── membership(company, role) ── permissions
+```
+**Visibility rules (enforced in the database):**
+- An owner sees its own data **plus all its subcontractors' data at its mines**.
+- A subcontractor sees **only its own data**, never another subcontractor's data.
+- The super admin can see everything, but only inside an explicit "support mode" that is logged.
+
+### B2. Permissions model
+- Each company creates its own **roles** (e.g. "Senior Geologist", "Shift Dispatcher").
+- Each role has, per module: **None / View / Edit / Approve**.
+- **User-level overrides** win over the role (as you specified).
+- Built-in starter roles are created by the setup wizard. Admins can change them.
+- Every action is checked **on the server**. A user can never approve their own request or raise their own rights.
+
+### B3. Data structure (main categories)
+**1. Platform:** companies, mines/sites, contracts, users, memberships, roles, permissions, licences, audit log.
+
+**2. Master data (the "nouns"):**
+
+| Table | Key fields |
 |---|---|
-| Three separate apps built separately (desktop, mobile, cloud) that don't share data or logic | **One system, one database, one set of rules.** Different screens for different people, all talking to the same server. |
-| Assumes perfect internet | **Offline-first cab app.** Tablet keeps working with no signal and syncs automatically when it reconnects. **Nothing is ever lost.** |
-| Assumes the cloud is reachable from the pit | **Server can run on-site at the mine** (works when the internet link to the city is down). The cloud is optional, for HQ reporting. |
-| Pretty screens with no real mining logic behind them | Built around a **standard time usage model** (GMG), real delay codes, real load/haul cycles, and tonnage factors from your mine. |
-| Tries to build everything at once, nothing works properly | **Small working pieces, one at a time**, each tested at the mine before the next one starts. |
-| UI designed for an office, not a vibrating cab at night with gloves | **Cab UI rules:** huge buttons, almost no typing, day/night mode, sound and vibration feedback, works in your language. |
-| No history of who changed what | **Every change is logged** (who, when, old value, new value). Reports can be trusted and audited. |
+| Equipment types | truck, excavator, loader, dozer, drill, grader, light vehicle… (configurable) |
+| Equipment | code, type, brand, model, capacity + unit, owning company, status |
+| Operators | name, employee ID, company, licences/qualified equipment |
+| Locations | name, **source/destination**, is stockpile, block, elevation, map shape (point/polygon) |
+| Blocks | block ID (the **key that links geology, plan, dispatch and survey**), pit, bench/elevation, seam/zone, planned tonnes/volume, planned qualities |
+| Materials | name, class (ore/coal, waste, topsoil…), is resource, unit, **group 1 / group 2** (labels set by the mine: "Seam / Sub-seam" for coal, "Category / Sub-category" for metals), density, swell factor |
+| Quality parameters | ash, CV, sulphur, moisture, Au g/t, Cu %… with units |
+| Products | name + quality range rules |
+| Shift patterns | e.g. Day 08:00–20:00, Night 20:00–08:00 |
+| Activity / delay codes | each mapped to a time category (see B5) |
+| Custom fields | name, unit type, notes; can be attached to equipment, locations, loads… |
 
-## 3. Who uses it (users and what they need)
+**3. Operational data (the "verbs"), all tied to mine + date + shift + company:**
 
-| User | Where | Main device | What they need from MineHub |
-|---|---|---|---|
-| **Truck / excavator / dozer operator** | In the cab | Rugged Android tablet | Log in, pre-start checklist, change status in 1 tap (Working / Delay / Standby / Breakdown), see current assignment, count loads, get messages from dispatch |
-| **Dispatcher** | Dispatch room | Desktop PC, 2 screens | Live board of all equipment and status, live map, assign trucks to shovels and dump points, see delays immediately, message operators |
-| **Shift supervisor / foreman** | Pit + office | Tablet or phone + PC | Start/end shift, crew assignment, approve/correct shift data, shift report |
-| **Maintenance planner / mechanic** | Workshop | PC + phone | Breakdown alerts, equipment hours (SMU), downtime history, fuel |
-| **Mine planning engineer** | Office | PC | Load the shift/day plan (targets by pit, block, material), compare plan vs actual, export data |
-| **Management** | Office / remote | PC / phone | KPI dashboard: production, availability, utilisation, productivity, trends |
-| **Administrator** | Office | PC | Equipment list, users, delay codes, material types, locations, tonnage factors |
+| Table | Who enters | What |
+|---|---|---|
+| Plan | Planners | targets per period/shift: block, material, quantity, qualities, destination |
+| Production loads | Dispatch / Data Collector App | loader, truck, operator, source/block, destination, material, quantity, time, distance |
+| Equipment activity log | Dispatch / App | every status period per machine: start, end, activity code |
+| Geology quality | Geologists | sample/analysis results per block/seam/stockpile |
+| Survey actuals | Surveyors | measured volume/tonnes per block/period, stockpile surveys |
+| Stockpile movements | calculated + adjustments | in / out / survey adjustment → **balance** |
+| Telemetry (later) | Data Collector App | GPS position, speed, status heartbeats |
 
-## 4. Core mining logic (the "brain" of the system)
+**4. Workflow:** daily checkpoints (per mine/day/department: Not started → Submitted → Approved), approvals, corrections (always with reason, old/new value kept).
 
-This is the part that makes the system correct. These rules are configured by the mine, not hard-coded.
+### B4. Key business logic
+- **Quantity of a load:** the default is truck capacity (auto-filled). It can be adjusted. Later it can come from payload sensors or bucket counts.
+- **Unit conversion:** bcm ↔ loose m³ ↔ tonnes, using material density and swell. Values are stored as entered and conversions are calculated, so a factor can be corrected later without changing the original entries.
+- **Quality of mined material:** comes from the block the load came from. Dispatchers never type ash or CV.
+- **Stockpile balance:** opening + received − reclaimed ± survey adjustment = closing.
+  - It's calculated per day and quality is blended by weighted average.
+- **Reconciliation:** compares plan vs dispatch vs survey per block and period. Variance and %, with a drill-down to the individual loads.
+- **Daily checkpoint:**
+  1. The day can only be approved when every required department has submitted.
+  2. Approved days are locked.
+  3. A change to a locked day needs a correction request with a reason, approved by the chief.
+- **Equipment time:** uses the GMG standard time model (B5).
 
-### 4.1 Time usage model
-We follow the **GMG (Global Mining Guidelines Group) Time Usage Model**, so KPIs are calculated the same way the industry does. Every second of every machine's shift falls into exactly one category:
-
+### B5. Equipment time model (industry standard — GMG Time Usage Model)
 ```
 Calendar time
-├── Unscheduled time                    (no shift planned, public holidays)
-└── Scheduled time
-    ├── Unavailable / Downtime
-    │   ├── Unplanned maintenance       (breakdown)
-    │   └── Planned maintenance         (service, PM)
-    └── Available time
-        ├── Standby / Idle              (no operator, waiting on plan, weather, blasting...)
-        └── Utilised time
-            ├── Operating delays        (waiting at shovel, queuing at dump, refuel, shift change, meal)
-            └── Production / Working time
+├── Unscheduled
+└── Scheduled
+    ├── Down: unplanned (breakdown) / planned (service)
+    └── Available
+        ├── Standby (no operator, weather, blasting, waiting plan…)
+        └── Utilised
+            ├── Operating delay (queue, refuel, shift change, meal…)
+            └── Working / Production
 ```
+- **Physical availability** = Available ÷ Scheduled.
+- **Utilisation** = Utilised ÷ Available.
+- **Productivity** = quantity ÷ working hour.
 
-From this we compute (consistently, for every machine, shift, day, month):
-- **Physical Availability (PA)** = Available time ÷ Scheduled time
-- **Use of Availability (UoA)** = Utilised time ÷ Available time
-- **Utilisation** = Utilised time ÷ Scheduled time
-- **Operating efficiency** = Working time ÷ Utilised time
-- **Productivity** = tonnes or BCM per working hour
-- **OEE-style effective utilisation** (optional)
+Every activity code a company creates must be put into one of these boxes, so KPIs are always comparable between companies.
 
-**Every status button the operator presses maps to one delay code, and every delay code maps to one category above.** The mine owns this table (❓ DECISION: we need your current delay code list).
+---
 
-### 4.2 Production (load & haul)
-- Every load is a record: **truck, loader, operator(s), material type, source (pit/bench/block), destination (dump/stockpile/ROM/crusher), time loaded, time dumped**, payload.
-- Payload comes from (in order of preference, configurable): truck payload sensor → bucket count × bucket factor → nominal truck capacity × fill factor.
-- Tonnes ↔ BCM conversion uses **density and swell factors per material** set by the planning engineer (coal, overburden by type, etc.).
-- **Cycle time** split into: queue at loader → spot → load → haul loaded → queue at dump → dump → return empty. Phase 1 uses operator buttons; Phase 2 detects these automatically from GPS geofences.
+## Part C — Technology
 
-### 4.3 Dispatch logic
-- **Phase 1 (fixed assignment):** dispatcher assigns trucks to a loader and dump; system shows the queue and warns about problems (loader waiting with no trucks, 4 trucks queued at one shovel).
-- **Phase 3 (assisted dispatch):** system *suggests* the next destination per truck to minimise loader idle and truck queue, using **match factor** (= trucks × loading time ÷ (loaders × truck cycle time)) and plan priorities. **The dispatcher always has the final say.**
+### C1. Shape of the system
+```
+                  ┌──────────────────────── CLOUD ────────────────────────┐
+ Office PCs  ───► │  MineHub Web App  (React)                              │
+ (any browser,    │        │                                               │
+  installable as  │        ▼                                               │
+  a desktop app)  │  MineHub API  (all rules, permissions, calculations)   │ ──► optional export to a
+                  │        │                                               │     company's own SQL Server
+ Handheld in ───► │        ▼                                               │
+ each machine     │  ONE PostgreSQL database (+ PostGIS for maps)          │
+ (Data Collector  │  • row-level security: companies can't see each other  │
+  App, works      │  • automatic daily backups                             │
+  OFFLINE, syncs) └────────────────────────────────────────────────────────┘
+```
+- **"Desktop app" = the web app.** It opens in a browser on any PC and can be "installed" with its own icon and window. One version to maintain, not two. A true desktop program can be added later if ever needed.
+- **The cloud** solves your "LAN 1 / LAN 2" question: every computer anywhere just connects to the same cloud system over the internet.
+- **Data Collector App:**
+  - stores everything on the device first, then syncs through the API;
+  - if there is no signal, it keeps working and sends the data later, so **nothing is lost**;
+  - "end of shift" means the operator closes the shift and all remaining data is confirmed as received.
 
-### 4.4 Plan vs actual
-- Planner enters (or imports from Excel/planning software) the shift targets: tonnes/BCM by loader, material, and destination.
-- Live progress bars on the dispatch board and in reports: plan vs actual, and the gap.
+### C2. ❓ DECISION — one database instead of Firebase + SQL
+The out-of-sync bugs came from splitting users and companies (Firebase) from everything else (SQL). Options:
 
-### 4.5 Data correctness rules
-- One machine has one status at any moment (no overlaps, no gaps).
-- A shift can't be closed while machines still have open statuses — supervisor resolves them first.
-- Corrections after the fact are allowed for supervisors only, and **always logged with a reason**.
-- Time is stored in one standard form and shown in mine local time; shift boundaries (e.g. 08:00/20:00) are configurable.
-
-## 5. Modules
-
-| # | Module | Summary |
+| Option | Description | My view |
 |---|---|---|
-| M1 | **Master data / Admin** | Equipment (type, model, capacity, ID), users & roles, crews, delay codes, materials, locations (pits, benches, dumps, stockpiles), shift patterns |
-| M2 | **Cab app (operator)** | Login with PIN/badge, pre-start checklist, status buttons, load counter, assignment display, messages, works offline |
-| M3 | **Dispatch board** | Live status of every machine, colour-coded; assignment drag-and-drop; alerts; messaging |
-| M4 | **Production tracking** | Loads, tonnes, BCM, cycle times, by machine/operator/material/location |
-| M5 | **Shift management** | Shift start/end, crew line-up, handover notes, supervisor review & sign-off |
-| M6 | **Reports & KPIs** | Shift report, daily report, monthly report, PA/UA/productivity, Excel/PDF export |
-| M7 | **Live map (GPS)** | Machine positions on mine map/drone image, geofences for loaders/dumps, automatic cycle detection |
-| M8 | **Maintenance & fuel** | Breakdown notification to workshop, SMU hours, PM due alerts, fuel issues per machine |
-| M9 | **Plan integration** | Shift/day targets, plan vs actual, import from Excel or planning software |
-| M10 | **Safety & alerts** | Fatigue/long-shift alerts, speed/zone alerts (with GPS), emergency button |
+| **A. One system (recommended)** | PostgreSQL holds everything; login handled by the same platform (e.g. Supabase Auth or our own) | Simplest, most reliable, no sync problems |
+| B. Firebase for login only | Firebase only checks email/password. **All** profile, company, licence and permission data lives in PostgreSQL | Acceptable if you want to keep Firebase |
+| C. Firebase holds profiles/companies/licences + SQL holds the rest | What you had | **Not recommended**: this caused the bugs |
 
-## 6. Technical architecture (plain-language version)
-
-```
- ┌──────────────── In the pit ─────────────────┐        ┌──────── Mine office ────────┐
- │  Cab tablets (Android app, works offline)   │        │  Dispatch room PCs          │
- │  - stores everything locally first          │  Wi-Fi │  Supervisor / planner PCs   │
- │  - sends to server when signal is available │  /LTE  │  (just a web browser)       │
- └──────────────────────┬──────────────────────┘        └──────────────┬──────────────┘
-                        │                                                │
-                        ▼                                                ▼
-              ┌──────────────────────────────────────────────────────────────┐
-              │            MineHub SERVER (runs ON-SITE at the mine)          │
-              │  - one database (all equipment, statuses, loads, shifts)      │
-              │  - all mining rules and KPI calculations                      │
-              │  - live updates pushed to dispatch screens instantly          │
-              │  - nightly automatic backups                                  │
-              └───────────────────────────────┬──────────────────────────────┘
-                                              │ (optional, when internet available)
-                                              ▼
-                              ┌───────────────────────────────┐
-                              │  Cloud copy for HQ / phones   │
-                              │  (reports & dashboards only)  │
-                              └───────────────────────────────┘
-```
-
-**Key point: "desktop", "cloud" and "mobile" are not three separate apps.** They are:
-1. **One server** (the brain + database).
-2. **One web application** for dispatch, supervisors, planners, managers, admin — opens in any browser on any PC. (Can be wrapped as a "desktop app" icon later if wanted; it's the same thing.)
-3. **One Android tablet app** for cabs — because it must work offline and use GPS reliably in the background, which a browser cannot do well.
-
-### Proposed technology (for the developer side — you don't need to learn these)
+### C3. Proposed stack (I will build and maintain it; you don't need to learn it)
 | Part | Choice | Why |
 |---|---|---|
-| Language everywhere | **TypeScript** | One language for server, web and tablet → shared rules, fewer bugs |
-| Server | **Node.js** (Fastify or NestJS) | Mature, fast, handles live updates well |
-| Database | **PostgreSQL + PostGIS** | Rock-solid, free, handles maps/GPS natively, easy backups |
-| Live updates | **WebSockets** | Dispatch board updates in under a second |
-| Web app | **React** | Most widely supported UI toolkit; easy to find developers later |
-| Cab tablet app | **React Native (Expo)** + local **SQLite** | Real Android app, offline storage, background GPS, shares code with web |
-| Maps | **MapLibre** with your own mine map / drone orthophoto / DXF outlines | Works offline, no licence fees |
-| Deployment | **Docker** on one on-site server (+ optional cloud copy) | Install/upgrade with one command; easy to move to cloud later |
-| Testing | Automated tests for every KPI formula and sync rule | KPIs must be provably correct |
+| Language | **TypeScript** everywhere | One language for web, API and handheld app; catches many errors before running |
+| Web app | **React** + Tailwind CSS (+ a component library) | You already know how it looks; huge ecosystem |
+| Tables / bulk edit | Spreadsheet-style grid component with **Excel copy/paste** | Your bulk-edit requirement |
+| Charts | Recharts / ECharts | Dashboards |
+| Map | **MapLibre/Leaflet** + satellite imagery + DXF import (converted to map shapes using the mine's coordinate system) | Free, works offline later |
+| API | **Node.js** (Fastify or NestJS) | Same language; enforces rules; same API for web and handheld |
+| Database | **PostgreSQL + PostGIS** with **row-level security** and **migrations** | Rock-solid, free software, handles maps, scales to millions of loads |
+| Handheld app | **React Native (Expo)** for Android, local SQLite storage | Offline-first, background GPS, shares code with web |
+| Live updates | WebSockets | Live map and dashboards (later phase) |
+| Hosting | Free/cheap tiers during development (e.g. Supabase or Neon for the DB, Vercel/Render/Fly or Google Cloud for the app); paid tier only at go-live | Low cost to start; move up as usage grows |
+| Quality | Automated tests + GitHub Actions run on every change; separate **test** and **live** environments | Things stop breaking silently |
 
-### 6.1 Reliability design (the "never lose data" rules)
-- Every event (status change, load) is created **on the tablet with its own unique ID and timestamp** and saved locally *before* it is sent.
-- Sending is retried until the server confirms. Sending the same event twice is harmless (the server recognises duplicates).
-- If a tablet is offline for a whole shift, all events sync later in the correct order and the reports fix themselves.
-- Tablet clocks are checked against the server to avoid wrong times.
-- Server database backed up automatically every night (and copied off-site); restore procedure tested.
-- If the server goes down, tablets keep working offline; dispatch falls back to radio until it's back. (Possible later: a second standby server.)
-- Health page shows: which tablets are online, last sync time, battery, app version.
+### C4. Reliability & security rules
+- Every record has an owner company, a creator and a timestamp, and changes are kept in the **audit log**.
+- No hard deletes of operational data: records are "voided" with a reason.
+- Records from handhelds have unique IDs, so duplicates are ignored. Offline data syncs in order.
+- Daily automated backups, and the restore procedure is tested.
+- Licence and permission checks happen on the server for every request.
+- Passwords are never stored by us (handled by the auth provider). All connections are encrypted.
 
-### 6.2 Security
-- Every user has a role (operator, dispatcher, supervisor, maintenance, planner, manager, admin) that controls what they can see and change.
-- Operators log in with a short PIN or badge (fast, glove-friendly); office users with password.
-- Encrypted connections; audit log of every change.
+---
 
-## 7. UI / UX design principles
+## Part D — UI / UX
 
-### Cab tablet (most important — if operators don't use it, the whole system fails)
-- **6–8 huge buttons max on the main screen**, usable with gloves on a vibrating machine.
-- Current state shown in giant colour + text: 🟢 WORKING / 🟡 DELAY: Queue at shovel / 🔴 BREAKDOWN.
-- **Status change = 1 tap** (2 taps max for a specific delay reason). No typing during the shift.
-- **Day / night mode** (dim dark theme at night so it doesn't blind the operator).
-- Sound + vibration confirmation on every press; big "Saved ✓ / Waiting to send ⏳" indicator.
-- Language: ❓ DECISION (e.g. Mongolian + English, switchable per user).
-- Works on cheap-to-replace rugged Android tablets; screen stays readable in sunlight.
-- Operator never needs to "save" or "sync" — it happens automatically.
+**Principles**
+1. **One clear layout:**
+   - left menu with modules (shown only if permitted);
+   - top bar with company/mine selector, date and shift selector, and user;
+   - content in the middle.
+2. **The date + shift + mine you choose stays selected across modules.** You don't re-enter it on every screen.
+3. **Tables behave like Excel:** paste from Excel, edit in place, sort, filter, export. Invalid cells are highlighted in red *before* saving, with the reason.
+4. **Forms use dropdowns from master data** and auto-fill (truck → capacity, block → material/seam).
+5. **Status everywhere:** the day checkpoint bar shows Plan ✔, Dispatch ✔, Geology ⏳, Survey ✖.
+6. **Every number in a report can be clicked down** to the rows behind it.
+7. **Languages:** ❓ DECISION — Mongolian + English, switchable.
+8. **Handheld app:** huge glove-friendly buttons, 1-tap status change, day/night mode, clear "saved / waiting to send" indicator, no typing during the shift.
 
-### Dispatch board (desktop)
-- **Exception-first:** problems jump out (red = breakdown, flashing = delay longer than X minutes, loader idle with no trucks).
-- One screen = live board grouped by loader (each loader with its trucks), second screen = live map.
-- Drag a truck onto a loader to reassign it. Undo is always available.
-- Running totals vs plan at the top: tonnes so far, % of shift target, trucks working/down.
+**Main screens**
+- Login / Register (join company / create company)
+- Setup wizard
+- Dashboard
+- Project setup: fleet, operators, locations, blocks, materials, qualities, products, custom fields, shifts, activity codes
+- Plan
+- Dispatch: shift entry, loads, equipment activity
+- Geology
+- Survey
+- Stockpiles
+- Reconciliation
+- Reports
+- Map
+- Daily approval
+- User management: users, requests, roles and permissions
+- Super admin: companies, licences, support mode
 
-### Office / reports
-- Shift report generated automatically at shift end, supervisor reviews and signs off.
-- Every number is **clickable down to the individual loads/statuses** behind it (so people trust it).
-- One-click export to Excel and PDF in your current report layout.
+---
 
-## 8. Phased roadmap
+## Part E — Roadmap (each phase ends with something working that you test)
 
-Each phase ends with a **working, tested system used at the mine**, not just a demo. We don't move on until the current phase is reliable.
+| Phase | What you get | "Done" means |
+|---|---|---|
+| **0. Foundation** | Project structure, test and live environments, automatic tests, **clickable mock-ups** of the main screens for your feedback | You approve the mock-ups and Part B |
+| **1. Platform core** | Register / login / reset; companies (owner/subcontractor, 6-digit ID); licences; super admin; join requests; custom roles and permissions; setup wizard | Every scenario from A3 works, with automated tests proving a subcontractor can't see other companies' data |
+| **2. Master data** | All project-setup lists with **Excel paste**, import/export; owner → subcontractor inheritance; commodity-agnostic materials | You can load your real mine's fleet, locations, blocks and materials from Excel in minutes |
+| **3. Daily data entry** | Plan, Dispatch (loads + equipment activity), Geology, Survey; daily checkpoint and approval; corrections and audit | One real day of your mine's data entered by each department and approved |
+| **4. Reports & reconciliation** | Shift/daily/monthly production, KPIs (availability, utilisation, productivity), plan vs dispatch vs survey, stockpile balance, ROM quality, Excel/PDF export, pivot explorer | Reports match your current Excel reports for a test month |
+| **5. Data Collector App** | Android handheld app: login, shift start, status buttons, loads, offline storage, end-of-shift submission feeding phase 3 automatically | Pilot on a few machines for 2 weeks, zero lost records |
+| **6. Live map & tracking** | Satellite map + DXF overlays, drawn areas with permissions, live positions and status, geofences, automatic load/dump detection, haul distance | Live map used by dispatch; auto cycles match manual counts |
+| **7. Advanced** | Report builder, Power BI connection, export to company SQL Server, dispatch optimisation, maintenance/fuel, on-premise option for big customers | Per feature |
 
-| Phase | Goal | Contents | "Done" means |
-|---|---|---|---|
-| **0. Foundation** (1–2 weeks) | Agree on rules & look | Answer decisions in §10, collect delay codes/equipment/report examples, clickable UI mock-ups of cab + dispatch screens, set up the code project | You approve the mock-ups and the time model table |
-| **1. MVP — "Digital time & load sheet"** | Replace paper/radio logging | M1 Admin, M2 Cab app (status + manual load count, offline), M3 Dispatch board (status only, manual assignment), M5 Shifts, M6 shift report & basic KPIs | **Pilot: 1 loader + 4–6 trucks for 2 weeks**, reports match manual check within agreed tolerance, zero lost data |
-| **2. GPS & live map** | See where everything is, automatic cycles | M7 map with your mine outlines, geofences, automatic load/dump detection, cycle time breakdown, speed | Auto-detected loads match operator counts ≥ 98% |
-| **3. Full fleet & smarter dispatch** | Whole mine on the system | All equipment types (dozers, graders, water carts, drills), assisted dispatch suggestions, M9 plan vs actual, M8 maintenance & fuel | Whole fleet live, dispatchers use suggestions |
-| **4. Integrations & extras** | Connect to the rest of the business | Cloud HQ dashboards, phone app for managers, payload sensors / OEM telematics, ERP export, planning software import, M10 safety alerts | Agreed per integration |
+**How we work, every phase:**
+1. I build a small piece.
+2. Tests run automatically.
+3. I check it myself in a browser.
+4. You get a link to try it on the **test** site.
+5. Once you approve, it goes to **live**.
 
-## 9. Risks and how we handle them
+If something breaks, we roll back to the last good version in one step.
 
-| Risk | Mitigation |
-|---|---|
-| Poor network coverage in the pit | Offline-first tablets; measure coverage map during pilot; only sync needs network |
-| Operators don't adopt it | Extremely simple cab UI, operators involved in design testing, run pilot with supportive crew first |
-| Wrong KPIs → people stop trusting it | Use GMG model, automated tests for every formula, drill-down to raw data, parallel run with existing reports during pilot |
-| Tablets break / dust / cold | Rugged tablets, spare pool, app re-installs and re-syncs in minutes, no data lives only on one tablet for long |
-| Scope creep (trying to do everything) | Strict phases; new ideas go to a list for the next phase |
-| Single developer / AI dependency | Clean, documented, standard technology so any developer can maintain it |
+---
 
-## 10. ❓ Decisions & information needed from the mine
+## Part F — ❓ Questions for you
+1. **Database decision (C2):** A (one system, recommended), or B (keep Firebase for login only)?
+2. **Data Collector App:** was it actually built? If yes, with what (Kotlin, Flutter, MIT App Inventor…), and is the code somewhere I can see? If not, we build it in phase 5.
+3. **First real user:** which mine/company and department will test first? (Your own department at your mine would be ideal.)
+4. **Sample files:** please share examples of your current Excel files:
+   - dispatch shift report;
+   - plan;
+   - geology quality;
+   - survey actuals;
+   - stockpile balance;
+   - the reports management receives.
 
-**About the operation**
-1. Mine type and size: how many **trucks, excavators/loaders, dozers, other**? Models and capacities?
-2. Shift pattern (e.g. 2 × 12 h, 08:00–20:00)? Number of crews?
-3. Current **delay code list** and how you report shift production today (please share a sample shift report / Excel).
-4. Materials tracked (coal grades, overburden types) and their density/swell factors — or where these come from.
-5. Destinations: dumps, stockpiles, ROM pad, crusher, wash plant?
-6. Which KPIs does management actually look at today?
-
-**About infrastructure**
-7. Is there Wi-Fi / LTE / radio network coverage in the pit? How good?
-8. Is there internet at the mine site? Reliable?
-9. Is there a server room / can the mine provide a PC/server on-site, or must it be cloud-only?
-10. Do the trucks already have GPS, payload systems, or OEM telematics (e.g. Komatsu, CAT, Hitachi)?
-11. Budget for tablets (rugged Android ~ one per machine)?
-
-**About users**
-12. Languages needed on screens?
-13. How many dispatchers per shift? Is there a dispatch room?
-14. Who will be the "owner" on the mine side to test and approve each phase?
-
-## 11. What happens next
-
-1. You review this plan and answer the questions in §10 (rough answers are fine).
-2. I adjust the plan and produce **clickable mock-ups** of the cab screen and dispatch board so you can see and feel them before any real building.
-3. After you approve the mock-ups, we build **Phase 1** step by step, and I explain each step in plain language.
+   These define the exact columns and calculations.
+5. **Activity/delay codes** you use today.
+6. **Coordinate system** of your CAD/DXF drawings (for example UTM zone 48N, or a local mine grid)?
+7. **Languages:** Mongolian + English?
+8. **Domain:** do you own `minehub.mn` (for the website and emails like admin@minehub.mn)?
+9. **Existing data:** is there anything in your old Firebase/Supabase you need to keep, or was it all test data?
