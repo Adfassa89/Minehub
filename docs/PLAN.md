@@ -66,6 +66,19 @@ Each workbook (13–14 MB, 27–29 sheets) is a small database built by hand:
 | Crew in lowercase | `в` instead of `В` (99 rows) | Crew comes automatically from the roster |
 | Stockpile numbers used as locations | `20095` in the destination column | Destination and stockpile number are separate fields |
 | A truck working for 2 excavators gets 2 rows, each repeating the full 720 minutes | Hours can be counted twice if rows are added up | The truck's hours are stored **once**, with trips as separate lines |
+| Crew letters typed in **Latin** instead of Cyrillic (West) | `B` / `A` instead of `Б` / `А` (861 rows) | Crew comes automatically from the roster |
+
+### East vs West — same process, slightly different files
+| | East | West |
+|---|---|---|
+| Companies | 2 (TET, KAM) | 4 (YMT, YOT, OTR, YUT) |
+| Trucks active in October | 165 | 496 |
+| Truck trip lines, 1–22 Oct | ~11,900 | ~29,100 |
+| Areas | East | West, West2, Borteeg |
+| Extra | — | Light tower log (`DB02_Ltower`), km on excavators |
+| Time code columns | Same idea, but **different column names and order** (e.g. "Автосамосвал хүлээлт" vs "Дамп хүлээлт") | |
+
+In Excel, every column difference means separate formulas and reports. In MineHub the **time codes are a list, not columns**: each pit can have its own codes, but reports work the same for every pit and company.
 
 ---
 
