@@ -22,7 +22,7 @@ Everything else (planning, geology, survey, licences, maps, live tracking) is bu
 
 | Topic | Decision | In plain words |
 |---|---|---|
-| Database | **One database: PostgreSQL.** No Firebase, no Supabase + Firebase mix | All data in one place, so it can never get "out of sync" |
+| Database | **One database: PostgreSQL, hosted on Supabase for the MVP.** No Firebase | All data in one place, so it can never get "out of sync". Supabase *is* PostgreSQL in the cloud |
 | Login | Built into MineHub itself | Same database, no second system |
 | "Desktop app" | **Web app** (React + TypeScript), opened in a browser on dispatcher PCs | One program to maintain; works on any PC; can have its own icon |
 | Server / rules | **API server** (Node.js + TypeScript) | All calculations and checks happen here, the same for the web and the cab app |
@@ -30,7 +30,7 @@ Everything else (planning, geology, survey, licences, maps, live tracking) is bu
 | Languages | **Mongolian by default**, English switchable | Screens are written in English in the code with a Mongolian translation file. Your own data names (e.g. "Тэсэлсэн хөрс") stay exactly as you enter them |
 | Coordinates | **WGS 84 / UTM zone 48N** (EPSG:32648) | Used later for the map and CAD drawings |
 | Safety | Code on GitHub with full history, automatic tests, separate **test** and **live** systems, daily backups | Nothing is lost, and every change can be undone |
-| Where it runs | Built so it can run **in the cloud or on a mine server**. We develop on a test server and decide before the pilot | ETT may require data to stay on its own server; we stay ready for both |
+| Where it runs | **MVP: Supabase cloud** (region close to Mongolia, e.g. Singapore or Tokyo). MineHub talks to the database only through its own API server, using standard PostgreSQL, so it can move to an ETT server later with a backup and restore and no code changes | When ETT IT reviews the working MVP, both options stay open |
 
 ---
 
