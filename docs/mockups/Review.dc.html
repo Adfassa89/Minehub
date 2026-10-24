@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="mn">
+<head>
+<meta charset="utf-8">
+<title>MineHub — Review and approve</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4F5F7}
+a{color:#1D4ED8}a:hover{color:#1E3A8A}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{text-align:left;font-weight:600;color:#4A5361;font-size:12px;padding:10px 12px;border-bottom:1px solid #DDE1E7;background:#F8F9FB;white-space:nowrap}
+.tbl td{padding:12px;border-bottom:1px solid #EEF0F3;vertical-align:middle;white-space:nowrap}
+.num{font-family:'IBM Plex Mono',monospace;text-align:right}
+.navlink{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#C9CED6;text-decoration:none;font-size:14px}
+.navlink:hover{background:#232833;color:#FFFFFF}
+</style>
+</helmet>
+<div style="font-family: Inter, system-ui, sans-serif; color: #161A21; display: flex; flex-wrap: wrap; min-height: 100vh; background: #F4F5F7">
+
+<nav aria-label="Main menu" style="flex: 1 1 240px; max-width: 100%; background: #161A21; padding: 20px 14px; box-sizing: border-box; display: flex; flex-direction: column; gap: 4px">
+<div style="display: flex; align-items: center; gap: 10px; padding: 4px 8px 20px">
+<div style="width: 32px; height: 32px; border-radius: 8px; background: #C2410C; display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-weight: 700">M</div>
+<div style="color: #FFFFFF; font-weight: 700; font-size: 18px">MineHub</div>
+</div>
+<a class="navlink" href="Main.dc.html">{{t.nav1}}</a>
+<a class="navlink" href="Review.dc.html" style="background: #2A303C; color: #FFFFFF">{{t.nav2}}</a>
+<a class="navlink" href="Production.dc.html">{{t.nav3}}</a>
+<a class="navlink" href="Performance.dc.html">{{t.nav4}}</a>
+<span class="navlink" style="opacity: 0.6">{{t.nav5}}</span>
+<div style="margin-top: auto; padding: 16px 8px 0; border-top: 1px solid #2A303C; color: #AEB4BE; font-size: 13px">
+<div style="color: #FFFFFF; font-weight: 600">Д. Сарантуяа</div>
+<div>{{t.role}}</div>
+</div>
+</nav>
+
+<main style="flex: 999 1 560px; min-width: 0; padding: 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
+
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px">
+<div>
+<h1 style="margin: 0; font-size: 24px; font-weight: 700">{{t.title}}</h1>
+<div style="color: #5B6472; font-size: 14px; margin-top: 4px">{{t.sub}}</div>
+</div>
+<div style="display: flex; gap: 4px; background: #E6E8EC; padding: 3px; border-radius: 8px" role="group" aria-label="Language">
+<button type="button" onClick="{{setMn}}" style="{{mnStyle}}">MN</button>
+<button type="button" onClick="{{setEn}}" style="{{enStyle}}">EN</button>
+</div>
+</div>
+
+<div style="background: #FFFFFF; border: 1px solid #DDE1E7; border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: baseline">
+<div style="font-weight: 700">{{t.dayCheck}} · 2026-10-22 · {{t.mineVal}}</div>
+<div style="{{dayStyle}}">{{dayText}}</div>
+</div>
+<div style="height: 10px; background: #EEF0F3; border-radius: 5px; overflow: hidden; display: flex">
+<div style="{{barStyle}}"></div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: #4A5361">
+<span><strong style="color: #15803D">■</strong> {{t.sApproved}}</span>
+<span><strong style="color: #1D4ED8">■</strong> {{t.sSubmitted}}</span>
+<span><strong style="color: #8A93A1">■</strong> {{t.sDraft}}</span>
+<span><strong style="color: #B42318">■</strong> {{t.sReturned}}</span>
+</div>
+</div>
+
+<section style="background: #FFFFFF; border: 1px solid #DDE1E7; border-radius: 10px; overflow: hidden">
+<div style="overflow-x: auto">
+<table class="tbl">
+<thead><tr>
+<th>{{t.company}}</th><th>{{t.shift}}</th><th class="num">{{t.trucks}}</th><th class="num">{{t.excav}}</th><th class="num">{{t.ob}}</th><th class="num">{{t.coal}}</th><th>{{t.checks}}</th><th>{{t.status}}</th><th>{{t.action}}</th>
+</tr></thead>
+<tbody>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+<tr style="{{r.rowStyle}}">
+<td><button type="button" onClick="{{r.select}}" style="font: inherit; font-weight: 600; background: none; border: none; padding: 0; cursor: pointer; color: #1D4ED8">{{r.company}}</button><div style="font-size: 12px; color: #5B6472">{{r.contract}}</div></td>
+<td>{{r.shift}}</td>
+<td class="num">{{r.trucks}}</td>
+<td class="num">{{r.ex}}</td>
+<td class="num">{{r.ob}}</td>
+<td class="num">{{r.coal}}</td>
+<td><span style="{{r.chkStyle}}">{{r.chk}}</span></td>
+<td><span style="{{r.stStyle}}">{{r.st}}</span><div style="font-size: 12px; color: #5B6472">{{r.when}}</div></td>
+<td>
+<div style="display: flex; gap: 6px; flex-wrap: wrap">
+<sc-if value="{{r.canAct}}" hint-placeholder-val="{{ true }}">
+<button type="button" onClick="{{r.approve}}" style="font: inherit; font-size: 13px; font-weight: 600; padding: 8px 12px; border: none; border-radius: 6px; background: #15803D; color: #FFFFFF; cursor: pointer">{{t.approve}}</button>
+<button type="button" onClick="{{r.ret}}" style="font: inherit; font-size: 13px; padding: 8px 12px; border: 1px solid #C9CED6; border-radius: 6px; background: #FFFFFF; cursor: pointer">{{t.ret}}</button>
+</sc-if>
+<sc-if value="{{r.isDraft}}" hint-placeholder-val="{{ false }}">
+<button type="button" onClick="{{r.remind}}" style="font: inherit; font-size: 13px; padding: 8px 12px; border: 1px solid #C9CED6; border-radius: 6px; background: #FFFFFF; cursor: pointer">{{r.remindLabel}}</button>
+</sc-if>
+<sc-if value="{{r.canUndo}}" hint-placeholder-val="{{ false }}">
+<button type="button" onClick="{{r.undo}}" style="font: inherit; font-size: 13px; padding: 8px 12px; border: 1px solid #C9CED6; border-radius: 6px; background: #FFFFFF; cursor: pointer">{{t.reopen}}</button>
+</sc-if>
+</div>
+</td>
+</tr>
+</sc-for>
+</tbody>
+<tfoot><tr>
+<td style="font-weight: 700">{{t.total}}</td><td></td><td class="num" style="font-weight: 700">277</td><td class="num" style="font-weight: 700">57</td><td class="num" style="font-weight: 700">210,962</td><td class="num" style="font-weight: 700">21,331</td><td colspan="3" style="font-size: 12px; color: #5B6472">{{t.coalNote}}</td>
+</tr></tfoot>
+</table>
+</div>
+</section>
+
+<section style="background: #FFFFFF; border: 1px solid #DDE1E7; border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+<div style="font-weight: 700">{{t.detail}} · {{sel.company}} {{sel.shift}}</div>
+<sc-for list="{{sel.items}}" as="it" hint-placeholder-count="2">
+<div style="{{it.style}}"><strong>{{it.title}}</strong> — {{it.text}}</div>
+</sc-for>
+<sc-if value="{{sel.none}}" hint-placeholder-val="{{ false }}">
+<div style="color: #15803D; font-weight: 600; font-size: 14px">✓ {{t.noIssues}}</div>
+</sc-if>
+<div style="font-size: 12px; color: #5B6472">{{t.exampleNote}}</div>
+</section>
+
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { lang: 'mn', sel: 'TET-DS', st: { 'TET-DS': 'submitted', 'TET-NS': 'approved', 'KAM-DS': 'submitted', 'KAM-NS': 'draft' }, reminded: false };
+  }
+  renderVals() {
+    const L = {
+      mn: {
+        nav1: 'Ээлжийн мэдээ', nav2: 'Хяналт, батлах', nav3: 'Үйлдвэрлэлийн тайлан', nav4: 'Техникийн гүйцэтгэл', nav5: 'Үндсэн мэдээлэл',
+        role: 'ETT-ийн диспетчер', title: 'Ээлжийн мэдээ хянах, батлах', sub: 'Гэрээт компаниудын илгээсэн ээлжийн мэдээг шалгаж батална. Батлагдсан мэдээ тайланд орно.',
+        dayCheck: 'Өдрийн хяналт', mineVal: 'Цанхи Зүүн (East)',
+        sApproved: 'Батлагдсан', sSubmitted: 'Хянуулахаар ирсэн', sDraft: 'Илгээгээгүй', sReturned: 'Буцаасан',
+        company: 'Компани', shift: 'Ээлж', trucks: 'Самосвал', excav: 'Экскаватор', ob: 'Хөрс, м³', coal: 'Нүүрс, м³', checks: 'Шалгалт', status: 'Төлөв', action: 'Үйлдэл',
+        approve: 'Батлах', ret: 'Буцаах', remind: 'Сануулга илгээх', reminded: 'Сануулга илгээсэн ✓', reopen: 'Буцааж нээх',
+        total: 'Өдрийн дүн', coalNote: 'Нүүрс тайланд тонноор: м³ × 1.4 = 29,863 т',
+        detail: 'Дэлгэрэнгүй', noIssues: 'Алдаа, анхааруулга алга.', exampleNote: 'EX#110, EX#124-ийн анхааруулга 10/22-ны жинхэнэ өгөгдлөөс. 1214-ийнх жишээ. Цаг хугацаа жишээ.',
+        dayAll: 'Бүгд батлагдсан — өдрийн тайлан түгжигдлээ', dayPart: ' / 4 батлагдсан', ok: '✓ Зөв', warn: ' анхааруулга', ret2: 'Засвар хүлээж буй',
+        w1t: 'EX#110', w1x: 'Гүйцэтгэл ээлжийн төлөвлөгөөний 27% (2,720 / 10,000 м³). OD 410 мин.',
+        w2t: '3 самосвал', w2x: 'Мото цаг 12.0-аас их (12.3, 12.4, 12.6).',
+        w3t: 'EX#124', w3x: 'Мото цаг 4.0 боловч гүйцэтгэл 0 м³.',
+        w4t: '1214', w4x: 'Рейс цөөн: 9.7 мото цагт 5 рейс.',
+        d1t: 'Илгээгээгүй', d1x: 'KAM компанийн шөнийн ээлжийн мэдээ хараахан ирээгүй.',
+        when1: '10/23 08:42-д батласан', when2: '20:30-д ирсэн', when3: '20:35-д ирсэн', when4: '—', when5: 'Одоо батласан', when6: 'Компани руу буцаасан'
+      },
+      en: {
+        nav1: 'Shift entry', nav2: 'Review & approve', nav3: 'Production report', nav4: 'Equipment performance', nav5: 'Master data',
+        role: 'ETT dispatcher', title: 'Review and approve shifts', sub: 'Check the shift reports sent by subcontractors and approve them. Only approved data goes into reports.',
+        dayCheck: 'Daily checkpoint', mineVal: 'Tsankhi East',
+        sApproved: 'Approved', sSubmitted: 'Submitted for review', sDraft: 'Not submitted', sReturned: 'Returned',
+        company: 'Company', shift: 'Shift', trucks: 'Trucks', excav: 'Excavators', ob: 'Overburden, m³', coal: 'Coal, m³', checks: 'Checks', status: 'Status', action: 'Action',
+        approve: 'Approve', ret: 'Return', remind: 'Send reminder', reminded: 'Reminder sent ✓', reopen: 'Reopen',
+        total: 'Day total', coalNote: 'Coal in reports in tonnes: m³ × 1.4 = 29,863 t',
+        detail: 'Details', noIssues: 'No errors or warnings.', exampleNote: 'The EX#110 and EX#124 warnings come from your real 22 Oct data. The 1214 warning and the times are examples.',
+        dayAll: 'All approved — day report locked', dayPart: ' / 4 approved', ok: '✓ OK', warn: ' warnings', ret2: 'Waiting for correction',
+        w1t: 'EX#110', w1x: 'Volume is 27% of shift plan (2,720 / 10,000 m³). OD 410 min.',
+        w2t: '3 trucks', w2x: 'Moto-hours above 12.0 (12.3, 12.4, 12.6).',
+        w3t: 'EX#124', w3x: 'Moto-hours 4.0 but volume 0 m³.',
+        w4t: '1214', w4x: 'Few trips: 5 trips in 9.7 moto-hours.',
+        d1t: 'Not submitted', d1x: 'KAM night shift report has not arrived yet.',
+        when1: 'approved 10/23 08:42', when2: 'arrived 20:30', when3: 'arrived 20:35', when4: '—', when5: 'approved just now', when6: 'sent back to company'
+      }
+    };
+    const s = this.state;
+    const t = L[s.lang];
+    const pill = (on) => on
+      ? 'font: inherit; font-size: 13px; font-weight: 600; padding: 6px 12px; border: none; border-radius: 6px; background: #FFFFFF; color: #161A21; cursor: pointer'
+      : 'font: inherit; font-size: 13px; padding: 6px 12px; border: none; border-radius: 6px; background: transparent; color: #4A5361; cursor: pointer';
+    const warnBox = 'background: #FFF7EB; border: 1px solid #F5D9A8; color: #6B3A00; border-radius: 8px; padding: 10px; font-size: 14px';
+    const grayBox = 'background: #F4F5F7; border: 1px solid #DDE1E7; color: #4A5361; border-radius: 8px; padding: 10px; font-size: 14px';
+    const base = [
+      { key: 'TET-DS', company: 'TET', contract: 'ЦЗУ_ТНТ', shift: 'DS', trucks: 130, ex: 26, ob: '95,380', coal: '13,611', items: [[t.w1t, t.w1x], [t.w3t, t.w3x]], when0: t.when2 },
+      { key: 'TET-NS', company: 'TET', contract: 'ЦЗУ_ТНТ', shift: 'NS', trucks: 123, ex: 27, ob: '101,934', coal: '6,642', items: [], when0: t.when1 },
+      { key: 'KAM-DS', company: 'KAM', contract: 'ЦЗУ_БАГЦ1_КЭМ', shift: 'DS', trucks: 11, ex: 2, ob: '6,365', coal: '302', items: [[t.w4t, t.w4x]], when0: t.when3 },
+      { key: 'KAM-NS', company: 'KAM', contract: 'ЦЗУ_БАГЦ1_КЭМ', shift: 'NS', trucks: 13, ex: 2, ob: '7,283', coal: '776', items: [], when0: t.when4 }
+    ];
+    const setSt = (k, v) => this.setState({ st: Object.assign({}, s.st, { [k]: v }) });
+    const stLabel = { approved: t.sApproved, submitted: t.sSubmitted, draft: t.sDraft, returned: t.sReturned };
+    const stStyle = {
+      approved: 'font-size: 12px; font-weight: 700; color: #15803D; background: #E6F4EA; padding: 3px 8px; border-radius: 10px',
+      submitted: 'font-size: 12px; font-weight: 700; color: #1D4ED8; background: #EAF0FD; padding: 3px 8px; border-radius: 10px',
+      draft: 'font-size: 12px; font-weight: 700; color: #4A5361; background: #EEF0F3; padding: 3px 8px; border-radius: 10px',
+      returned: 'font-size: 12px; font-weight: 700; color: #B42318; background: #FDE7E5; padding: 3px 8px; border-radius: 10px'
+    };
+    const rows = base.map((b) => {
+      const st = s.st[b.key];
+      const n = b.items.length;
+      const isDraft = st === 'draft';
+      let when = b.when0;
+      if (st === 'approved' && b.key !== 'TET-NS') when = t.when5;
+      if (st === 'returned') when = t.when6;
+      return {
+        company: b.company, contract: b.contract, shift: b.shift,
+        trucks: isDraft ? '—' : b.trucks, ex: isDraft ? '—' : b.ex, ob: isDraft ? '—' : b.ob, coal: isDraft ? '—' : b.coal,
+        chk: isDraft ? '—' : (n ? '! ' + n + t.warn : t.ok),
+        chkStyle: isDraft ? 'color: #8A93A1' : (n ? 'color: #8A4B00; font-weight: 600' : 'color: #15803D; font-weight: 600'),
+        st: stLabel[st], stStyle: stStyle[st], when,
+        canAct: st === 'submitted', isDraft, canUndo: st === 'approved' || st === 'returned',
+        remindLabel: s.reminded ? t.reminded : t.remind,
+        approve: () => setSt(b.key, 'approved'),
+        ret: () => setSt(b.key, 'returned'),
+        undo: () => setSt(b.key, 'submitted'),
+        remind: () => this.setState({ reminded: true }),
+        select: () => this.setState({ sel: b.key }),
+        rowStyle: s.sel === b.key ? 'background: #F5F8FF' : ''
+      };
+    });
+    const selB = base.find((b) => b.key === s.sel);
+    const selDraft = s.st[s.sel] === 'draft';
+    const items = selDraft ? [{ title: t.d1t, text: t.d1x, style: grayBox }] : selB.items.map((i) => ({ title: i[0], text: i[1], style: warnBox }));
+    const counts = { approved: 0, submitted: 0, draft: 0, returned: 0 };
+    Object.values(s.st).forEach((v) => { counts[v] += 1; });
+    const seg = (n, c) => n ? 'linear-gradient(' + c + ',' + c + ') no-repeat' : '';
+    const pa = counts.approved * 25, ps = counts.submitted * 25, pd = counts.draft * 25, pr = counts.returned * 25;
+    const allOk = counts.approved === 4;
+    return {
+      t, rows,
+      sel: { company: selB.company, shift: selB.shift, items, none: items.length === 0 },
+      mnStyle: pill(s.lang === 'mn'), enStyle: pill(s.lang === 'en'),
+      setMn: () => this.setState({ lang: 'mn' }), setEn: () => this.setState({ lang: 'en' }),
+      dayText: allOk ? t.dayAll : counts.approved + t.dayPart,
+      dayStyle: allOk ? 'color: #15803D; font-weight: 700' : 'color: #4A5361; font-weight: 600',
+      barStyle: 'width: 100%; background: linear-gradient(90deg, #15803D 0 ' + pa + '%, #1D4ED8 ' + pa + '% ' + (pa + ps) + '%, #B42318 ' + (pa + ps) + '% ' + (pa + ps + pr) + '%, #8A93A1 ' + (pa + ps + pr) + '% 100%)'
+    };
+  }
+}
+</script>
+</body>
+</html>

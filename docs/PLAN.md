@@ -108,6 +108,18 @@ In phase 2, operators will press these same codes as big buttons on the cab tabl
 
 ## 5. Phase 1 — "Digital dispatcher report" (East + West)
 
+### How data flows today, and in MineHub
+- **Today:** operator fills a paper sheet → the **subcontractor's dispatcher** makes a report → the **ETT dispatcher** types or pastes it into the Excel workbook.
+- **MineHub:** the subcontractor's dispatcher enters their own company's shift directly (with all checks) → the **ETT dispatcher reviews and approves** → reports update automatically. One retyping step disappears.
+- Management looks first at the **production report**, then the **performance report**.
+
+Clickable mock-ups of these screens: see `docs/mockups/` (published as a private link for review).
+
+### Facts confirmed from your data while building the mock-ups
+- Coal trip volumes are in **m³**; the report converts to tonnes at **1.4 t/m³** (exactly 1.4000 for both TET and KAM on 22 Oct).
+- 22 Oct night shift has rows for **two crews** (Г and Б), although the roster has one crew per shift.
+- Three excavator time columns are **not in the time-code list** (`DM03_DaValid`): "ТНАЛТ-н дамп хүлээсэн", "ТНАЛТ зогсож дамп хүлээсэн", "Ажил хаялт". They need a category.
+
 ### Screens
 1. **Login.** Roles: admin, dispatcher, supervisor, viewer.
 2. **Shift entry:**
